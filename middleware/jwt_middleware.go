@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"learn-echo/helper"
 	"learn-echo/utils"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -17,9 +18,12 @@ func JWTMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		authHeader := c.Request().Header.Get("Authorization")
 
 		if authHeader == "" {
-			return c.JSON(http.StatusUnauthorized, map[string]string{
-				"message": "missing token",
-			})
+
+			return helper.ErrorResponse(
+				c,
+				http.StatusUnauthorized,
+				"missing token",
+			)
 		}
 
 		tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
@@ -29,10 +33,27 @@ func JWTMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			return c.JSON(http.StatusUnauthorized, map[string]string{
-				"message": "invalid token",
-			})
+
+			return helper.ErrorResponse(
+				c,
+				http.StatusUnauthorized,
+				"invalid token",
+			)
 		}
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+
+			return helper.ErrorResponse(
+				c,
+				http.StatusUnauthorized,
+				"invalid token claims",
+			)
+		}
+
+		c.Set("user_id", claims["user_id"])
+		c.Set("name", claims["name"])
+		c.Set("email", claims["email"])
 
 		return next(c)
 	}

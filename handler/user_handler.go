@@ -6,6 +6,7 @@ import (
 	"learn-echo/config"
 	"learn-echo/model"
 	"learn-echo/utils"
+	"learn-echo/helper"
 
 	"github.com/labstack/echo/v5"
 )
@@ -18,7 +19,7 @@ func GetUsers(c *echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, users)
+	return helper.SuccessResponse(c, http.StatusOK, "Users retrieved successfully", users)
 }
 
 func GetUserByID(c *echo.Context) error {
@@ -29,12 +30,10 @@ func GetUserByID(c *echo.Context) error {
 
 	if err := config.DB.First(&user, id).Error; err != nil {
 
-		return c.JSON(http.StatusNotFound, map[string]string{
-			"message": "user not found",
-		})
+		return helper.ErrorResponse(c, http.StatusNotFound, "User not found")
 	}
 
-	return c.JSON(http.StatusOK, user)
+	return helper.SuccessResponse(c, http.StatusOK, "User retrieved successfully", user)
 }
 
 func CreateUser(c *echo.Context) error {
@@ -56,7 +55,7 @@ func CreateUser(c *echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusCreated, u)
+	return helper.SuccessResponse(c, http.StatusCreated, "User created successfully", u)
 }
 
 func UpdateUser(c *echo.Context) error {
@@ -67,9 +66,7 @@ func UpdateUser(c *echo.Context) error {
 
 	if err := config.DB.First(&user, id).Error; err != nil {
 
-		return c.JSON(http.StatusNotFound, map[string]string{
-			"message": "user not found",
-		})
+		return helper.ErrorResponse(c, http.StatusNotFound, "User not found")
 	}
 
 	updatedUser := new(model.User)
@@ -100,7 +97,7 @@ func UpdateUser(c *echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, user)
+	return helper.SuccessResponse(c, http.StatusOK, "User updated successfully", user)
 }
 
 func DeleteUser(c *echo.Context) error {
@@ -120,7 +117,5 @@ func DeleteUser(c *echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, map[string]string{
-		"message": "user deleted",
-	})
+	return helper.SuccessResponse(c, http.StatusOK, "User deleted successfully", nil)
 }

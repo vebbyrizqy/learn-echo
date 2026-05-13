@@ -3,9 +3,9 @@ package handler
 import (
 	"net/http"
 
-	"learn-echo/data"
+	"learn-echo/helper"
 	"learn-echo/model"
-	"learn-echo/utils"
+	"learn-echo/service"
 
 	"github.com/labstack/echo/v5"
 )
@@ -15,32 +15,48 @@ func Login(c *echo.Context) error {
 	req := new(model.LoginRequest)
 
 	if err := c.Bind(req); err != nil {
-		return err
+
+		return helper.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			"invalid request body",
+		)
 	}
 
-	for _, user := range data.Users {
+	token, err := service.Login(req)
+	if err != nil {
 
-		if user.Email == req.Email && utils.CheckPasswordHash(req.Password, user.Password) {
-
-			token, err := utils.GenerateJWT(user.ID, user.Email)
-			if err != nil {
-				return err
-			}
-
-			return c.JSON(http.StatusOK, map[string]string{
-				"token": token,
-			})
-		}
+		return helper.ErrorResponse(
+			c,
+			http.StatusUnauthorized,
+			"invalid credentials",
+		)
 	}
 
-	return c.JSON(http.StatusUnauthorized, map[string]string{
-		"message": "invalid credentials",
-	})
+	return helper.SuccessResponse(
+		c,
+		http.StatusOK,
+		"login successful",
+		map[string]string{
+			"token": token,
+		},
+	)
 }
 
 func Profile(c *echo.Context) error {
 
-	return c.JSON(http.StatusOK, map[string]string{
-		"message": "welcome to profile",
-	})
+	userID := c.Get("user_id")
+	name := c.Get("name")
+	email := c.Get("email")
+
+	return helper.SuccessResponse(
+		c,
+		http.StatusOK,
+		"profile fetched successfully",
+		map[string]interface{}{
+			"user_id": userID,
+			"name":    name,
+			"email":   email,
+		},
+	)
 }

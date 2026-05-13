@@ -3,37 +3,48 @@ package handler
 import (
 	"net/http"
 
-	"learn-echo/config"
+	"learn-echo/helper"
 	"learn-echo/model"
+	"learn-echo/service"
 
 	"github.com/labstack/echo/v5"
 )
 
 func GetTasks(c *echo.Context) error {
 
-	var tasks []model.Task
-
-	if err := config.DB.Find(&tasks).Error; err != nil {
-		return err
+	tasks, err := service.GetTasks()
+	if err != nil {
+		return helper.InternalServerError(c)
 	}
 
-	return c.JSON(http.StatusOK, tasks)
+	return helper.SuccessResponse(
+		c,
+		http.StatusOK,
+		"tasks fetched successfully",
+		tasks,
+	)
 }
 
 func GetTaskByID(c *echo.Context) error {
 
 	id := c.Param("id")
 
-	var task model.Task
+	task, err := service.GetTaskByID(id)
+	if err != nil {
 
-	if err := config.DB.First(&task, id).Error; err != nil {
-
-		return c.JSON(http.StatusNotFound, map[string]string{
-			"message": "task not found",
-		})
+		return helper.ErrorResponse(
+			c,
+			http.StatusNotFound,
+			"task not found",
+		)
 	}
 
-	return c.JSON(http.StatusOK, task)
+	return helper.SuccessResponse(
+		c,
+		http.StatusOK,
+		"task fetched successfully",
+		task,
+	)
 }
 
 func CreateTask(c *echo.Context) error {
@@ -41,92 +52,97 @@ func CreateTask(c *echo.Context) error {
 	t := new(model.Task)
 
 	if err := c.Bind(t); err != nil {
-		return err
+		return helper.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			"invalid request body",
+		)
 	}
 
-	if err := config.DB.Create(&t).Error; err != nil {
-		return err
+	if err := service.CreateTask(t); err != nil {
+		return helper.InternalServerError(c)
 	}
 
-	return c.JSON(http.StatusCreated, t)
+	return helper.SuccessResponse(
+		c,
+		http.StatusCreated,
+		"task created successfully",
+		t,
+	)
 }
 
 func UpdateTask(c *echo.Context) error {
 
 	id := c.Param("id")
 
-	var task model.Task
-
-	if err := config.DB.First(&task, id).Error; err != nil {
-
-		return c.JSON(http.StatusNotFound, map[string]string{
-			"message": "task not found",
-		})
-	}
-
 	updatedTask := new(model.Task)
 
 	if err := c.Bind(updatedTask); err != nil {
-		return err
+
+		return helper.ErrorResponse(
+			c,
+			http.StatusBadRequest,
+			"invalid request body",
+		)
 	}
 
-	if updatedTask.Title != "" {
-		task.Title = updatedTask.Title
+	task, err := service.UpdateTask(id, updatedTask)
+	if err != nil {
+
+		return helper.ErrorResponse(
+			c,
+			http.StatusNotFound,
+			"task not found",
+		)
 	}
 
-	if updatedTask.UserID != 0 {
-		task.UserID = updatedTask.UserID
-	}
-
-	task.Completed = updatedTask.Completed
-
-	if err := config.DB.Save(&task).Error; err != nil {
-		return err
-	}
-
-	return c.JSON(http.StatusOK, task)
+	return helper.SuccessResponse(
+		c,
+		http.StatusOK,
+		"task updated successfully",
+		task,
+	)
 }
 
 func CompleteTask(c *echo.Context) error {
 
 	id := c.Param("id")
 
-	var task model.Task
+	task, err := service.CompleteTask(id)
+	if err != nil {
 
-	if err := config.DB.First(&task, id).Error; err != nil {
-
-		return c.JSON(http.StatusNotFound, map[string]string{
-			"message": "task not found",
-		})
+		return helper.ErrorResponse(
+			c,
+			http.StatusNotFound,
+			"task not found",
+		)
 	}
 
-	task.Completed = true
-
-	if err := config.DB.Save(&task).Error; err != nil {
-		return err
-	}
-
-	return c.JSON(http.StatusOK, task)
+	return helper.SuccessResponse(
+		c,
+		http.StatusOK,
+		"task completed successfully",
+		task,
+	)
 }
 
 func DeleteTask(c *echo.Context) error {
 
 	id := c.Param("id")
 
-	var task model.Task
+	if err := service.DeleteTask(id); err != nil {
 
-	if err := config.DB.First(&task, id).Error; err != nil {
-
-		return c.JSON(http.StatusNotFound, map[string]string{
-			"message": "task not found",
-		})
+		return helper.ErrorResponse(
+			c,
+			http.StatusNotFound,
+			"task not found",
+		)
 	}
 
-	if err := config.DB.Delete(&task).Error; err != nil {
-		return err
-	}
-
-	return c.JSON(http.StatusOK, map[string]string{
-		"message": "task deleted",
-	})
+	return helper.SuccessResponse(
+		c,
+		http.StatusOK,
+		"task deleted successfully",
+		nil,
+	)
 }

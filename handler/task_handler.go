@@ -2,39 +2,38 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
-	"learn-echo/data"
+	"learn-echo/config"
 	"learn-echo/model"
 
 	"github.com/labstack/echo/v5"
 )
 
 func GetTasks(c *echo.Context) error {
-	return c.JSON(http.StatusOK, data.Tasks)
+
+	var tasks []model.Task
+
+	if err := config.DB.Find(&tasks).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, tasks)
 }
 
 func GetTaskByID(c *echo.Context) error {
 
 	id := c.Param("id")
 
-	taskID, err := strconv.Atoi(id)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "invalid id",
+	var task model.Task
+
+	if err := config.DB.First(&task, id).Error; err != nil {
+
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"message": "task not found",
 		})
 	}
 
-	for _, task := range data.Tasks {
-
-		if task.ID == taskID {
-			return c.JSON(http.StatusOK, task)
-		}
-	}
-
-	return c.JSON(http.StatusNotFound, map[string]string{
-		"message": "task not found",
-	})
+	return c.JSON(http.StatusOK, task)
 }
 
 func CreateTask(c *echo.Context) error {
@@ -45,9 +44,9 @@ func CreateTask(c *echo.Context) error {
 		return err
 	}
 
-	t.ID = len(data.Tasks) + 1
-
-	data.Tasks = append(data.Tasks, *t)
+	if err := config.DB.Create(&t).Error; err != nil {
+		return err
+	}
 
 	return c.JSON(http.StatusCreated, t)
 }
@@ -56,10 +55,12 @@ func UpdateTask(c *echo.Context) error {
 
 	id := c.Param("id")
 
-	taskID, err := strconv.Atoi(id)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "invalid id",
+	var task model.Task
+
+	if err := config.DB.First(&task, id).Error; err != nil {
+
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"message": "task not found",
 		})
 	}
 
@@ -69,77 +70,63 @@ func UpdateTask(c *echo.Context) error {
 		return err
 	}
 
-	for i, task := range data.Tasks {
-
-		if task.ID == taskID {
-
-			if updatedTask.Title != "" {
-				data.Tasks[i].Title = updatedTask.Title
-			}
-
-			if updatedTask.UserID != 0 {
-				data.Tasks[i].UserID = updatedTask.UserID
-			}
-
-			data.Tasks[i].Completed = updatedTask.Completed
-
-			return c.JSON(http.StatusOK, data.Tasks[i])
-		}
+	if updatedTask.Title != "" {
+		task.Title = updatedTask.Title
 	}
 
-	return c.JSON(http.StatusNotFound, map[string]string{
-		"message": "task not found",
-	})
+	if updatedTask.UserID != 0 {
+		task.UserID = updatedTask.UserID
+	}
+
+	task.Completed = updatedTask.Completed
+
+	if err := config.DB.Save(&task).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, task)
 }
+
 func CompleteTask(c *echo.Context) error {
 
 	id := c.Param("id")
 
-	taskID, err := strconv.Atoi(id)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "invalid id",
+	var task model.Task
+
+	if err := config.DB.First(&task, id).Error; err != nil {
+
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"message": "task not found",
 		})
 	}
 
-	for i, task := range data.Tasks {
+	task.Completed = true
 
-		if task.ID == taskID {
-			data.Tasks[i].Completed = true
-
-			return c.JSON(http.StatusOK, data.Tasks[i])
-		}
+	if err := config.DB.Save(&task).Error; err != nil {
+		return err
 	}
 
-	return c.JSON(http.StatusNotFound, map[string]string{
-		"message": "task not found",
-	})
+	return c.JSON(http.StatusOK, task)
 }
 
 func DeleteTask(c *echo.Context) error {
 
 	id := c.Param("id")
 
-	taskID, err := strconv.Atoi(id)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "invalid id",
+	var task model.Task
+
+	if err := config.DB.First(&task, id).Error; err != nil {
+
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"message": "task not found",
 		})
 	}
 
-	for i, task := range data.Tasks {
-
-		if task.ID == taskID {
-
-			data.Tasks = append(data.Tasks[:i], data.Tasks[i+1:]...)
-
-			return c.JSON(http.StatusOK, map[string]string{
-				"message": "task deleted",
-			})
-		}
+	if err := config.DB.Delete(&task).Error; err != nil {
+		return err
 	}
 
-	return c.JSON(http.StatusNotFound, map[string]string{
-		"message": "task not found",
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "task deleted",
 	})
 }

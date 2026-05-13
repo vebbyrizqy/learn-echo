@@ -2,12 +2,15 @@ package main
 
 import (
 	"learn-echo/routes"
+	"learn-echo/config"
 
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
+
 )
 
 func main() {
+	config.ConnectDatabase()
 
 	e := echo.New()
 

@@ -2,9 +2,8 @@ package handler
 
 import (
 	"net/http"
-	"strconv"
 
-	"learn-echo/data"
+	"learn-echo/config"
 	"learn-echo/model"
 	"learn-echo/utils"
 
@@ -12,30 +11,30 @@ import (
 )
 
 func GetUsers(c *echo.Context) error {
-	return c.JSON(http.StatusOK, data.Users)
+
+	var users []model.User
+
+	if err := config.DB.Find(&users).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, users)
 }
 
 func GetUserByID(c *echo.Context) error {
 
 	id := c.Param("id")
 
-	userID, err := strconv.Atoi(id)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "invalid id",
+	var user model.User
+
+	if err := config.DB.First(&user, id).Error; err != nil {
+
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"message": "user not found",
 		})
 	}
 
-	for _, user := range data.Users {
-
-		if user.ID == userID {
-			return c.JSON(http.StatusOK, user)
-		}
-	}
-
-	return c.JSON(http.StatusNotFound, map[string]string{
-		"message": "user not found",
-	})
+	return c.JSON(http.StatusOK, user)
 }
 
 func CreateUser(c *echo.Context) error {
@@ -53,9 +52,9 @@ func CreateUser(c *echo.Context) error {
 	
 	u.Password = hashedPassword
 	
-	u.ID = len(data.Users) + 1
-	
-	data.Users = append(data.Users, *u)
+	if err := config.DB.Create(&u).Error; err != nil {
+		return err
+	}
 
 	return c.JSON(http.StatusCreated, u)
 }
@@ -64,10 +63,12 @@ func UpdateUser(c *echo.Context) error {
 
 	id := c.Param("id")
 
-	userID, err := strconv.Atoi(id)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "invalid id",
+	var user model.User
+
+	if err := config.DB.First(&user, id).Error; err != nil {
+
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"message": "user not found",
 		})
 	}
 
@@ -77,61 +78,49 @@ func UpdateUser(c *echo.Context) error {
 		return err
 	}
 
-	for i, user := range data.Users {
-
-		if user.ID == userID {
-
-			if updatedUser.Name != "" {
-				data.Users[i].Name = updatedUser.Name
-			}
-
-			if updatedUser.Email != "" {
-				data.Users[i].Email = updatedUser.Email
-			}
-
-			if updatedUser.Password != "" {
-
-				hashedPassword, err := utils.HashPassword(updatedUser.Password)
-				if err != nil {
-					return err
-				}
-
-				data.Users[i].Password = hashedPassword
-			}
-
-			return c.JSON(http.StatusOK, data.Users[i])
-		}
+	if updatedUser.Name != "" {
+		user.Name = updatedUser.Name
 	}
 
-	return c.JSON(http.StatusNotFound, map[string]string{
-		"message": "user not found",
-	})
+	if updatedUser.Email != "" {
+		user.Email = updatedUser.Email
+	}
+
+	if updatedUser.Password != "" {
+
+		hashedPassword, err := utils.HashPassword(updatedUser.Password)
+		if err != nil {
+			return err
+		}
+
+		user.Password = hashedPassword
+	}
+
+	if err := config.DB.Save(&user).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, user)
 }
 
 func DeleteUser(c *echo.Context) error {
 
 	id := c.Param("id")
 
-	userID, err := strconv.Atoi(id)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"message": "invalid id",
+	var user model.User
+
+	if err := config.DB.First(&user, id).Error; err != nil {
+
+		return c.JSON(http.StatusNotFound, map[string]string{
+			"message": "user not found",
 		})
 	}
 
-	for i, user := range data.Users {
-
-		if user.ID == userID {
-
-			data.Users = append(data.Users[:i], data.Users[i+1:]...)
-
-			return c.JSON(http.StatusOK, map[string]string{
-				"message": "user deleted",
-			})
-		}
+	if err := config.DB.Delete(&user).Error; err != nil {
+		return err
 	}
 
-	return c.JSON(http.StatusNotFound, map[string]string{
-		"message": "user not found",
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "user deleted",
 	})
 }

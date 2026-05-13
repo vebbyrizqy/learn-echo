@@ -27,8 +27,8 @@ func InitRoutes(e *echo.Echo) {
 
 	e.POST("/tasks", handler.CreateTask)
 
-	e.PUT("/tasks/:id", handler.UpdateTask)
-	e.PUT("/tasks/:id/complete", handler.CompleteTask)
+	e.PATCH("/tasks/:id", handler.UpdateTask)
+	e.PATCH("/tasks/:id/complete", handler.CompleteTask)
 
 	e.DELETE("/tasks/:id", handler.DeleteTask)
 

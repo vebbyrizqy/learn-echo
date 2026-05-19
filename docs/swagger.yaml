@@ -1,0 +1,353 @@
+basePath: /
+definitions:
+  helper.APIResponse:
+    properties:
+      data: {}
+      errors: {}
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  model.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  model.Task:
+    properties:
+      completed:
+        type: boolean
+      id:
+        type: integer
+      title:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+      user_id:
+        type: integer
+    type: object
+  model.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+host: localhost:1323
+info:
+  contact: {}
+  description: API documentation for Learn Echo
+  title: Learn Echo API
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: login using email and password
+      parameters:
+      - description: Login Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+      summary: Login user
+      tags:
+      - auth
+  /logout:
+    post:
+      description: logout current session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+      summary: Logout user
+      tags:
+      - auth
+  /profile:
+    get:
+      description: get logged in user profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+      summary: Get user profile
+      tags:
+      - auth
+  /tasks:
+    get:
+      description: get all tasks
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+      summary: Get all tasks
+      tags:
+      - tasks
+    post:
+      consumes:
+      - application/json
+      description: create new task
+      parameters:
+      - description: Task Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.Task'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+      summary: Create task
+      tags:
+      - tasks
+  /tasks/{id}:
+    delete:
+      description: delete task by id
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+      summary: Delete task
+      tags:
+      - tasks
+    get:
+      description: get task by id
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+      summary: Get task by ID
+      tags:
+      - tasks
+    patch:
+      consumes:
+      - application/json
+      description: update existing task
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Task Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+      summary: Update task
+      tags:
+      - tasks
+  /tasks/{id}/complete:
+    patch:
+      description: mark task as completed
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+      summary: Complete task
+      tags:
+      - tasks
+  /users:
+    get:
+      description: get all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+      summary: Get all users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: create new user
+      parameters:
+      - description: User Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+      summary: Create user
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      description: delete user by id
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+      summary: Delete user
+      tags:
+      - users
+    get:
+      description: get user by id
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+      summary: Get user by ID
+      tags:
+      - users
+    patch:
+      consumes:
+      - application/json
+      description: update existing user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helper.APIResponse'
+      summary: Update user
+      tags:
+      - users
+swagger: "2.0"

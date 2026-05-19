@@ -8,11 +8,13 @@ import (
 	"learn-echo/utils"
 )
 
-func Login(req *model.LoginRequest) (string, error) {
+func Login(req *model.LoginRequest) (model.User, error) {
 
 	user, err := repository.FindUserByEmail(req.Email)
+
 	if err != nil {
-		return "", errors.New("invalid credentials")
+
+		return model.User{}, errors.New("invalid credentials")
 	}
 
 	isValidPassword := utils.CheckPasswordHash(
@@ -21,13 +23,9 @@ func Login(req *model.LoginRequest) (string, error) {
 	)
 
 	if !isValidPassword {
-		return "", errors.New("invalid credentials")
+
+		return model.User{}, errors.New("invalid credentials")
 	}
 
-	token, err := utils.GenerateJWT(user.ID,user.Name, user.Email)
-	if err != nil {
-		return "", err
-	}
-
-	return token, nil
+	return user, nil
 }

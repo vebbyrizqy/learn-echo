@@ -6,6 +6,13 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
+type APIResponse struct {
+	Success bool        `json:"success"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data,omitempty"`
+	Errors  interface{} `json:"errors,omitempty"`
+}
+
 func SuccessResponse(
 	c *echo.Context,
 	status int,
@@ -13,11 +20,13 @@ func SuccessResponse(
 	data interface{},
 ) error {
 
-	return c.JSON(status, map[string]interface{}{
-		"success": true,
-		"message": message,
-		"data":    data,
-	})
+	response := APIResponse{
+		Success: true,
+		Message: message,
+		Data:    data,
+	}
+
+	return c.JSON(status, response)
 }
 
 func ErrorResponse(
@@ -26,16 +35,23 @@ func ErrorResponse(
 	message string,
 ) error {
 
-	return c.JSON(status, map[string]interface{}{
-		"success": false,
-		"message": message,
-	})
+	response := APIResponse{
+		Success: false,
+		Message: message,
+	}
+
+	return c.JSON(status, response)
 }
 
 func InternalServerError(c *echo.Context) error {
 
-	return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-		"success": false,
-		"message": "internal server error",
-	})
+	response := APIResponse{
+		Success: false,
+		Message: "internal server error",
+	}
+
+	return c.JSON(
+		http.StatusInternalServerError,
+		response,
+	)
 }

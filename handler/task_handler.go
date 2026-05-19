@@ -10,6 +10,14 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
+// GetTasks godoc
+//
+//	@Summary		Get all tasks
+//	@Description	get all tasks
+//	@Tags			tasks
+//	@Produce		json
+//	@Success		200	{object}	helper.APIResponse
+//	@Router			/tasks [get]
 func GetTasks(c *echo.Context) error {
 
 	tasks, err := service.GetTasks()
@@ -25,6 +33,16 @@ func GetTasks(c *echo.Context) error {
 	)
 }
 
+// GetTaskByID godoc
+//
+//	@Summary		Get task by ID
+//	@Description	get task by id
+//	@Tags			tasks
+//	@Produce		json
+//	@Param			id	path		int	true	"Task ID"
+//	@Success		200	{object}	helper.APIResponse
+//	@Failure		404	{object}	helper.APIResponse
+//	@Router			/tasks/{id} [get]
 func GetTaskByID(c *echo.Context) error {
 
 	id := c.Param("id")
@@ -47,6 +65,17 @@ func GetTaskByID(c *echo.Context) error {
 	)
 }
 
+// CreateTask godoc
+//
+//	@Summary		Create task
+//	@Description	create new task
+//	@Tags			tasks
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		model.Task	true	"Task Request"
+//	@Success		201		{object}	helper.APIResponse
+//	@Failure		400		{object}	helper.APIResponse
+//	@Router			/tasks [post]
 func CreateTask(c *echo.Context) error {
 
 	t := new(model.Task)
@@ -71,6 +100,18 @@ func CreateTask(c *echo.Context) error {
 	)
 }
 
+// UpdateTask godoc
+//
+//	@Summary		Update task
+//	@Description	update existing task
+//	@Tags			tasks
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int			true	"Task ID"
+//	@Param			request	body		model.Task	true	"Task Request"
+//	@Success		200		{object}	helper.APIResponse
+//	@Failure		404		{object}	helper.APIResponse
+//	@Router			/tasks/{id} [patch]
 func UpdateTask(c *echo.Context) error {
 
 	id := c.Param("id")
@@ -104,6 +145,16 @@ func UpdateTask(c *echo.Context) error {
 	)
 }
 
+// CompleteTask godoc
+//
+//	@Summary		Complete task
+//	@Description	mark task as completed
+//	@Tags			tasks
+//	@Produce		json
+//	@Param			id	path		int	true	"Task ID"
+//	@Success		200	{object}	helper.APIResponse
+//	@Failure		404	{object}	helper.APIResponse
+//	@Router			/tasks/{id}/complete [patch]
 func CompleteTask(c *echo.Context) error {
 
 	id := c.Param("id")
@@ -126,6 +177,16 @@ func CompleteTask(c *echo.Context) error {
 	)
 }
 
+// DeleteTask godoc
+//
+//	@Summary		Delete task
+//	@Description	delete task by id
+//	@Tags			tasks
+//	@Produce		json
+//	@Param			id	path		int	true	"Task ID"
+//	@Success		200	{object}	helper.APIResponse
+//	@Failure		404	{object}	helper.APIResponse
+//	@Router			/tasks/{id} [delete]
 func DeleteTask(c *echo.Context) error {
 
 	id := c.Param("id")
